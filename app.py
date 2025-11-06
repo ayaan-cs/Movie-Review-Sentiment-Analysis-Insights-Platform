@@ -98,13 +98,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Download NLTK data if needed
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
+# Download NLTK data if needed - robust version for Streamlit Cloud
+def download_nltk_data():
+    """Download required NLTK data files - must be called before using NLTK"""
+    if not NLTK_AVAILABLE:
+        return
+    
+    required_data = ['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger']
+    for data_name in required_data:
+        try:
+            if data_name == 'punkt':
+                nltk.data.find('tokenizers/punkt')
+            elif data_name == 'stopwords':
+                nltk.data.find('corpora/stopwords')
+            elif data_name == 'wordnet':
+                nltk.data.find('corpora/wordnet')
+            elif data_name == 'averaged_perceptron_tagger':
+                nltk.data.find('taggers/averaged_perceptron_tagger')
+        except LookupError:
+            try:
+                nltk.download(data_name, quiet=True)
+            except Exception as e:
+                # Log error but continue - will fail later if truly needed
+                print(f"Warning: Could not download NLTK data '{data_name}': {e}")
+
+# Ensure NLTK data is downloaded early
+if NLTK_AVAILABLE:
+    download_nltk_data()
 
 # Initialize session state
 if 'prediction_history' not in st.session_state:
@@ -201,6 +221,22 @@ def clean_text(text):
 
 def advanced_preprocess(text):
     """Tokenize, remove stopwords, and lemmatize - optimized for short texts"""
+    # Ensure NLTK data is available before using it
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt', quiet=True)
+    
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords', quiet=True)
+    
+    try:
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('wordnet', quiet=True)
+    
     lemmatizer = WordNetLemmatizer()
     stop_words = set(stopwords.words('english'))
     
