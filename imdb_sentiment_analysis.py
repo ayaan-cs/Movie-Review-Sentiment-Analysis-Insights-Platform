@@ -90,6 +90,10 @@ dataset = load_dataset("ajaykarthick/imdb-movie-reviews")
 # Convert to pandas DataFrame
 df = pd.DataFrame(dataset['train'])
 
+# Convert label column to sentiment if needed (0 -> negative, 1 -> positive)
+if 'label' in df.columns and 'sentiment' not in df.columns:
+    df['sentiment'] = df['label'].map({1: 'positive', 0: 'negative'})
+
 print(f"\n✅ Dataset loaded successfully!")
 print(f"📊 Total reviews: {len(df):,}")
 print(f"📋 Columns: {df.columns.tolist()}")
