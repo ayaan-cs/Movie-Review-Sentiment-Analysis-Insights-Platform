@@ -209,6 +209,131 @@ def get_css(dark_mode=False):
 
 st.markdown(get_css(st.session_state.dark_mode), unsafe_allow_html=True)
 
+# ============================================================================
+# SECURITY & INPUT VALIDATION FUNCTIONS
+# ============================================================================
+
+def validate_review_input(text):
+    """
+    Validate that input is a legitimate movie review text.
+    Rejects URLs, IP addresses, email addresses, and other non-review content.
+    
+    Returns:
+        tuple: (is_valid: bool, error_message: str)
+    """
+    if not text or not isinstance(text, str):
+        return False, "Input must be a non-empty text string."
+    
+    # Maximum length check (prevent DoS attacks)
+    MAX_LENGTH = 10000  # characters
+    if len(text) > MAX_LENGTH:
+        return False, f"Input is too long (max {MAX_LENGTH} characters). Please provide a shorter review."
+    
+    # Minimum meaningful length
+    MIN_WORDS = 3
+    word_count = len(text.split())
+    if word_count < MIN_WORDS:
+        return False, f"Input is too short. Please provide at least {MIN_WORDS} words for meaningful analysis."
+    
+    text_lower = text.lower().strip()
+    
+    # Check for URL patterns (http://, https://, www.)
+    url_patterns = [
+        r'https?://\S+',  # http:// or https://
+        r'www\.\S+',       # www.
+        r'ftp://\S+',      # ftp://
+        r'[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?',  # domain.com or domain.com/path
+    ]
+    for pattern in url_patterns:
+        if re.search(pattern, text_lower):
+            return False, "Invalid input: URLs are not allowed. Please provide a movie review text, not a web address."
+    
+    # Check for IP addresses (IPv4 and IPv6 patterns)
+    ipv4_pattern = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+    ipv6_pattern = r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b'
+    if re.search(ipv4_pattern, text) or re.search(ipv6_pattern, text):
+        return False, "Invalid input: IP addresses are not allowed. Please provide a movie review text."
+    
+    # Check for localhost patterns
+    localhost_patterns = [
+        r'\blocalhost\b',
+        r'\b127\.0\.0\.1\b',
+        r'\b0\.0\.0\.0\b',
+    ]
+    for pattern in localhost_patterns:
+        if re.search(pattern, text_lower):
+            return False, "Invalid input: Localhost addresses are not allowed. Please provide a movie review text."
+    
+    # Check for port numbers (e.g., :5178, :3000, :8080)
+    # More specific pattern: colon followed by 2-5 digits at word boundary, but not time patterns
+    # Exclude time patterns like "3:30", "12:00" (1-2 digits before colon)
+    port_pattern = r'(?:localhost|127\.0\.0\.1|0\.0\.0\.0|[\w-]+\.(?:com|org|net|io|edu|gov)):\d{2,5}\b'
+    if re.search(port_pattern, text_lower):
+        return False, "Invalid input: Port numbers are not allowed. Please provide a movie review text, not a server address."
+    
+    # Check for email addresses
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if re.search(email_pattern, text):
+        return False, "Invalid input: Email addresses are not allowed. Please provide a movie review text."
+    
+    # Check if input is mostly special characters or numbers (not meaningful text)
+    alpha_chars = sum(1 for c in text if c.isalpha())
+    total_chars = len([c for c in text if not c.isspace()])
+    if total_chars > 0 and alpha_chars / total_chars < 0.3:  # Less than 30% alphabetic
+        return False, "Invalid input: Input must contain meaningful text. Please provide a movie review with actual words."
+    
+    # Check for suspicious patterns (SQL injection, script tags, etc.)
+    suspicious_patterns = [
+        r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>',  # Script tags
+        r'union\s+select',  # SQL injection
+        r'drop\s+table',    # SQL injection
+        r'javascript:',      # JavaScript protocol
+        r'onerror\s*=',     # Event handlers
+        r'onclick\s*=',      # Event handlers
+    ]
+    for pattern in suspicious_patterns:
+        if re.search(pattern, text_lower):
+            return False, "Invalid input: Suspicious content detected. Please provide a legitimate movie review."
+    
+    # Check if input looks like code or technical content
+    code_indicators = ['function', 'import', 'def ', 'class ', 'var ', 'const ', 'let ', 
+                      'return', 'console.log', 'print(', '<?php', '<%', '#!/']
+    text_words = set(text_lower.split())
+    if any(indicator in text_lower for indicator in code_indicators):
+        return False, "Invalid input: Code or technical content detected. Please provide a movie review text."
+    
+    # Check for excessive special characters (likely not a review)
+    special_char_ratio = sum(1 for c in text if not (c.isalnum() or c.isspace() or c in ".,!?;:'\"-")) / len(text) if text else 0
+    if special_char_ratio > 0.3:  # More than 30% special characters
+        return False, "Invalid input: Too many special characters. Please provide a readable movie review."
+    
+    # All checks passed
+    return True, ""
+
+def sanitize_input(text):
+    """
+    Sanitize input to prevent injection attacks and data leaks.
+    Removes potentially dangerous content while preserving legitimate review text.
+    """
+    if not text or not isinstance(text, str):
+        return ""
+    
+    # Remove null bytes
+    text = text.replace('\x00', '')
+    
+    # Remove HTML/XML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    
+    # Remove control characters (except newlines, tabs, carriage returns)
+    text = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]', '', text)
+    
+    # Limit length to prevent DoS
+    MAX_SAFE_LENGTH = 10000
+    if len(text) > MAX_SAFE_LENGTH:
+        text = text[:MAX_SAFE_LENGTH]
+    
+    return text.strip()
+
 # Text preprocessing functions (same as main script)
 def clean_text(text):
     """Advanced text preprocessing"""
@@ -592,8 +717,23 @@ def main():
                     st.text(processed[:200] + "..." if len(processed) > 200 else processed)
         
         if predict_button and review_text.strip():
+            # SECURITY: Validate and sanitize input before processing
+            sanitized_text = sanitize_input(review_text)
+            is_valid, error_message = validate_review_input(sanitized_text)
+            
+            if not is_valid:
+                st.error(f"❌ **Input Validation Failed**\n\n{error_message}\n\nPlease provide a valid movie review text.")
+                st.info("💡 **Tip:** A movie review should contain actual words describing your opinion about a movie, not URLs, IP addresses, or technical content.")
+                st.stop()
+            
+            # Use sanitized text for processing
+            review_text = sanitized_text
+            
             progress_bar = st.progress(0)
             status_text = st.empty()
+            
+            status_text.text("Validating input...")
+            progress_bar.progress(5)
             
             status_text.text("Loading models...")
             progress_bar.progress(10)
@@ -861,12 +1001,41 @@ def main():
                         status_text = st.empty()
                         
                         results = []
+                        invalid_reviews = []
                         total = len(df)
                         
                         for idx, row in df.iterrows():
                             review = str(row[review_col])
                             status_text.text(f"Processing review {idx + 1} of {total}...")
                             progress_bar.progress((idx + 1) / total)
+                            
+                            # SECURITY: Validate and sanitize input before processing
+                            sanitized_review = sanitize_input(review)
+                            is_valid, error_message = validate_review_input(sanitized_review)
+                            
+                            if not is_valid:
+                                # Skip invalid reviews and log them
+                                invalid_reviews.append({
+                                    'Row': idx + 1,
+                                    'Review': review[:100] + '...' if len(review) > 100 else review,
+                                    'Error': error_message
+                                })
+                                results.append({
+                                    'Review': review[:100] + '...' if len(review) > 100 else review,
+                                    'Full_Review': review,
+                                    'ML_Sentiment': "INVALID",
+                                    'ML_Confidence': "N/A",
+                                    'Transformer_Sentiment': "INVALID",
+                                    'Transformer_Confidence': "N/A",
+                                    'Agreement': "N/A",
+                                    'Word_Count': len(review.split()),
+                                    'Polarity': "N/A",
+                                    'Validation_Error': error_message
+                                })
+                                continue
+                            
+                            # Use sanitized review for processing
+                            review = sanitized_review
                             
                             # Predict
                             ml_sent, ml_conf = predict_sentiment_ml(review, ml_model, vectorizer) if ml_model else (None, None)
@@ -889,54 +1058,69 @@ def main():
                         
                         progress_bar.empty()
                         status_text.empty()
-                        st.success(f"Processed {total} reviews!")
+                        
+                        # Show warning if there were invalid reviews
+                        if invalid_reviews:
+                            st.warning(f"⚠️ **Warning:** {len(invalid_reviews)} review(s) were skipped due to validation errors. See details below.")
+                            with st.expander(f"View {len(invalid_reviews)} Invalid Review(s)", expanded=False):
+                                invalid_df = pd.DataFrame(invalid_reviews)
+                                st.dataframe(invalid_df, use_container_width=True)
+                        
+                        valid_count = total - len(invalid_reviews)
+                        st.success(f"✅ Processed {valid_count} valid review(s) out of {total} total!")
                         
                         # Create results dataframe
                         results_df = pd.DataFrame(results)
                         
-                        # Statistics
+                        # Statistics (exclude invalid reviews)
                         st.markdown("---")
                         st.subheader("Batch Statistics")
+                        
+                        # Filter out invalid reviews for statistics
+                        valid_results_df = results_df[results_df['ML_Sentiment'] != 'INVALID'].copy()
+                        valid_count_for_stats = len(valid_results_df)
                         
                         stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
                         
                         with stat_col1:
-                            ml_pos = (results_df['ML_Sentiment'] == 'Positive').sum()
-                            ml_neg = (results_df['ML_Sentiment'] == 'Negative').sum()
+                            ml_pos = (valid_results_df['ML_Sentiment'] == 'Positive').sum()
+                            ml_neg = (valid_results_df['ML_Sentiment'] == 'Negative').sum()
                             st.metric("ML Positive", ml_pos)
                             st.metric("ML Negative", ml_neg)
                         
                         with stat_col2:
-                            trans_pos = (results_df['Transformer_Sentiment'] == 'Positive').sum()
-                            trans_neg = (results_df['Transformer_Sentiment'] == 'Negative').sum()
+                            trans_pos = (valid_results_df['Transformer_Sentiment'] == 'Positive').sum()
+                            trans_neg = (valid_results_df['Transformer_Sentiment'] == 'Negative').sum()
                             st.metric("Transformer Positive", trans_pos)
                             st.metric("Transformer Negative", trans_neg)
                         
                         with stat_col3:
-                            agreements = (results_df['Agreement'] == 'Yes').sum()
-                            disagreements = (results_df['Agreement'] == 'No').sum()
-                            agreement_rate = (agreements / total * 100) if total > 0 else 0
+                            agreements = (valid_results_df['Agreement'] == 'Yes').sum()
+                            disagreements = (valid_results_df['Agreement'] == 'No').sum()
+                            agreement_rate = (agreements / valid_count_for_stats * 100) if valid_count_for_stats > 0 else 0
                             st.metric("Agreements", agreements)
                             st.metric("Agreement Rate", f"{agreement_rate:.1f}%")
                         
                         with stat_col4:
-                            # Average confidence
-                            ml_confs = [float(r['ML_Confidence'].replace('%', '')) for r in results if r['ML_Confidence'] != 'N/A']
-                            trans_confs = [float(r['Transformer_Confidence'].replace('%', '')) for r in results if r['Transformer_Confidence'] != 'N/A']
+                            # Average confidence (only for valid reviews)
+                            ml_confs = [float(r['ML_Confidence'].replace('%', '')) for r in results 
+                                       if r['ML_Confidence'] != 'N/A' and r.get('ML_Sentiment') != 'INVALID']
+                            trans_confs = [float(r['Transformer_Confidence'].replace('%', '')) for r in results 
+                                          if r['Transformer_Confidence'] != 'N/A' and r.get('Transformer_Sentiment') != 'INVALID']
                             avg_ml = np.mean(ml_confs) if ml_confs else 0
                             avg_trans = np.mean(trans_confs) if trans_confs else 0
                             st.metric("Avg ML Confidence", f"{avg_ml:.1f}%")
                             st.metric("Avg Transformer Confidence", f"{avg_trans:.1f}%")
                         
-                        # Visualization
+                        # Visualization (exclude invalid reviews)
                         if PLOTLY_AVAILABLE:
-                            # Sentiment distribution
+                            # Sentiment distribution (only valid reviews)
                             fig = make_subplots(rows=1, cols=2, subplot_titles=('ML Model Distribution', 'Transformer Distribution'))
                             
-                            ml_counts = results_df['ML_Sentiment'].value_counts()
+                            ml_counts = valid_results_df['ML_Sentiment'].value_counts()
                             fig.add_trace(go.Bar(x=ml_counts.index, y=ml_counts.values, name='ML', marker_color='#4ECDC4'), row=1, col=1)
                             
-                            trans_counts = results_df['Transformer_Sentiment'].value_counts()
+                            trans_counts = valid_results_df['Transformer_Sentiment'].value_counts()
                             fig.add_trace(go.Bar(x=trans_counts.index, y=trans_counts.values, name='Transformer', marker_color='#FF6B6B'), row=1, col=2)
                             
                             fig.update_layout(height=400, title_text="Sentiment Distribution", showlegend=False)

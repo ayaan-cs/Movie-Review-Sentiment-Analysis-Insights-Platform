@@ -150,6 +150,7 @@ Thumbs.db
 # Project specific
 # Generated analysis results (users should run the script to generate these)
 analysis_results/
+!analysis_results/FINAL_REPORT.md
 # Model files - ignore by default, but allow specific files needed for deployment
 models/*
 !models/best_model.pkl
