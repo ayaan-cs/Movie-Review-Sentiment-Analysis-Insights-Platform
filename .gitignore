@@ -150,8 +150,12 @@ Thumbs.db
 # Project specific
 # Generated analysis results (users should run the script to generate these)
 analysis_results/
-models/
+# Model files - ignore by default, but allow specific files needed for deployment
+models/*
+!models/best_model.pkl
+!models/tfidf_vectorizer.pkl
 *.pkl
+!models/*.pkl
 *.pickle
 *.h5
 *.hdf5
