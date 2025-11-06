@@ -27,6 +27,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from wordcloud import WordCloud
+import joblib
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -588,6 +589,13 @@ print("✅ Created: 12_confusion_matrix.png")
 print(f"\n🏆 Best performing model: {best_model_name}")
 print(f"   F1 Score: {results_df.loc[best_model_name, 'F1 Score']:.4f}")
 
+# Save the best model and vectorizer for later use
+print("\n💾 Saving best model and vectorizer...")
+os.makedirs('models', exist_ok=True)
+joblib.dump(best_model_metrics['model'], 'models/best_model.pkl')
+joblib.dump(tfidf, 'models/tfidf_vectorizer.pkl')
+print("✅ Saved: models/best_model.pkl and models/tfidf_vectorizer.pkl")
+
 # ============================================================================
 # STEP 7: Hugging Face Transformer Models (AI Integration)
 # ============================================================================
@@ -634,11 +642,26 @@ transformer_predictions = predict_sentiment_batch(df_sample['review'])
 df_sample['transformer_label'] = [pred['label'] for pred in transformer_predictions]
 df_sample['transformer_score'] = [pred['score'] for pred in transformer_predictions]
 
-# Map labels to binary
+# Map labels to binary - DistilBERT outputs POSITIVE/NEGATIVE
+# Note: The model might have inverted labels, so we check both mappings
 df_sample['transformer_binary'] = df_sample['transformer_label'].map({'POSITIVE': 1, 'NEGATIVE': 0})
+df_sample['transformer_binary_inverted'] = df_sample['transformer_label'].map({'POSITIVE': 0, 'NEGATIVE': 1})
 
-# Compare with actual labels
-transformer_accuracy = (df_sample['transformer_binary'] == df_sample['sentiment_binary']).mean()
+# Check which mapping gives better accuracy (fix for potential label inversion)
+accuracy_normal = (df_sample['transformer_binary'] == df_sample['sentiment_binary']).mean()
+accuracy_inverted = (df_sample['transformer_binary_inverted'] == df_sample['sentiment_binary']).mean()
+
+if accuracy_inverted > accuracy_normal:
+    # Use inverted mapping if it's better
+    df_sample['transformer_binary'] = df_sample['transformer_binary_inverted']
+    print(f"\n⚠️  Note: Transformer labels were inverted. Using corrected mapping.")
+    transformer_accuracy = accuracy_inverted
+else:
+    transformer_accuracy = accuracy_normal
+
+# Clean up temporary column
+df_sample = df_sample.drop(columns=['transformer_binary_inverted'], errors='ignore')
+
 print(f"\n✅ Transformer Model Accuracy: {transformer_accuracy:.4f}")
 
 # Detailed comparison

@@ -148,16 +148,23 @@ cython_debug/
 Thumbs.db
 
 # Project specific
-# Keep analysis_results but ignore large data files
-*.csv
+# Generated analysis results (users should run the script to generate these)
+analysis_results/
+models/
 *.pkl
 *.pickle
 *.h5
 *.hdf5
 
+# Data files (too large for git)
+*.csv
+*.parquet
+*.feather
+
 # Hugging Face cache
 .cache/
 transformers_cache/
+.huggingface/
 
 # NLTK data (downloaded automatically)
 nltk_data/
@@ -165,7 +172,25 @@ nltk_data/
 # Large model files
 *.bin
 *.safetensors
+*.pt
+*.pth
+
+# Streamlit cache
+.streamlit/
 
 # Temporary files
 *.tmp
 *.temp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
