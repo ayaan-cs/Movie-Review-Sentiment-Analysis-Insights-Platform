@@ -60,17 +60,17 @@ from scipy import stats
 print("="*80)
 print("IMDB SENTIMENT ANALYSIS PROJECT")
 print("="*80)
-print("✅ All libraries imported successfully!")
-print(f"📱 Using device: {'cuda' if torch.cuda.is_available() else 'cpu'}")
+print("All libraries imported successfully!")
+print(f"Using device: {'cuda' if torch.cuda.is_available() else 'cpu'}")
 
 # Download NLTK data
-print("\n📥 Downloading NLTK resources...")
+print("\nDownloading NLTK resources...")
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 nltk.download('wordnet', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 nltk.download('punkt_tab', quiet=True)
-print("✅ NLTK resources downloaded!")
+print("NLTK resources downloaded!")
 
 # Set visualization style
 plt.style.use('seaborn-v0_8-darkgrid')
@@ -83,7 +83,7 @@ sns.set_palette("husl")
 print("\n" + "="*80)
 print("STEP 2: LOADING DATASET")
 print("="*80)
-print("📥 Loading IMDB dataset from Hugging Face...")
+print("Loading IMDB dataset from Hugging Face...")
 
 # Load the dataset (50,000 reviews)
 dataset = load_dataset("ajaykarthick/imdb-movie-reviews")
@@ -95,10 +95,10 @@ df = pd.DataFrame(dataset['train'])
 if 'label' in df.columns and 'sentiment' not in df.columns:
     df['sentiment'] = df['label'].map({1: 'positive', 0: 'negative'})
 
-print(f"\n✅ Dataset loaded successfully!")
-print(f"📊 Total reviews: {len(df):,}")
-print(f"📋 Columns: {df.columns.tolist()}")
-print(f"💾 Dataset size: {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
+print(f"\nDataset loaded successfully!")
+print(f"Total reviews: {len(df):,}")
+print(f"Columns: {df.columns.tolist()}")
+print(f"Dataset size: {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
 
 # Display basic info
 print("\n" + "="*80)
@@ -136,13 +136,13 @@ print(f"\nClass balance: {df['sentiment'].value_counts(normalize=True)}")
 print("\n" + "="*80)
 print("STEP 3: DATA PREPROCESSING")
 print("="*80)
-print("🔧 Starting data preprocessing...")
+print("Starting data preprocessing...")
 
 # Create a copy for processing
 df_processed = df.copy()
 
 # Add review length features
-print("📏 Creating length features...")
+print("Creating length features...")
 df_processed['review_length'] = df_processed['review'].apply(len)
 df_processed['word_count'] = df_processed['review'].apply(lambda x: len(str(x).split()))
 df_processed['avg_word_length'] = df_processed['review'].apply(
@@ -173,11 +173,11 @@ def clean_text(text):
     return text
 
 # Apply text cleaning
-print("🧹 Cleaning text...")
+print("Cleaning text...")
 df_processed['cleaned_review'] = df_processed['review'].apply(clean_text)
 
 # Tokenization and lemmatization
-print("🔤 Tokenizing and lemmatizing...")
+print("Tokenizing and lemmatizing...")
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
@@ -191,7 +191,7 @@ def advanced_preprocess(text):
 df_processed['processed_review'] = df_processed['cleaned_review'].apply(advanced_preprocess)
 
 # Calculate sentiment polarity score using TextBlob
-print("📊 Calculating polarity and subjectivity scores...")
+print("Calculating polarity and subjectivity scores...")
 df_processed['polarity'] = df_processed['review'].apply(
     lambda x: TextBlob(str(x)).sentiment.polarity
 )
@@ -199,8 +199,8 @@ df_processed['subjectivity'] = df_processed['review'].apply(
     lambda x: TextBlob(str(x)).sentiment.subjectivity
 )
 
-print("✅ Preprocessing complete!")
-print(f"\n📊 Processed dataset shape: {df_processed.shape}")
+print("Preprocessing complete!")
+print(f"\nProcessed dataset shape: {df_processed.shape}")
 print("\nFeature Statistics:")
 print(df_processed[['review_length', 'word_count', 'avg_word_length', 'polarity', 'subjectivity']].describe())
 
@@ -211,7 +211,7 @@ print(df_processed[['review_length', 'word_count', 'avg_word_length', 'polarity'
 print("\n" + "="*80)
 print("STEP 4: EXPLORATORY DATA ANALYSIS")
 print("="*80)
-print("📊 Generating comprehensive EDA visualizations...")
+print("Generating comprehensive EDA visualizations...")
 
 # Create output directory for plots
 os.makedirs('analysis_results', exist_ok=True)
@@ -236,7 +236,7 @@ fig.add_trace(
 )
 fig.update_layout(height=400, title_text="<b>Sentiment Analysis Overview</b>", showlegend=False)
 fig.write_html('analysis_results/01_sentiment_distribution.html')
-print("✅ Created: 01_sentiment_distribution.html")
+print("Created: 01_sentiment_distribution.html")
 
 # 2. Review Length Distribution by Sentiment
 fig = px.box(df_processed, x='sentiment', y='word_count',
@@ -245,7 +245,7 @@ fig = px.box(df_processed, x='sentiment', y='word_count',
              labels={'word_count': 'Number of Words', 'sentiment': 'Sentiment'},
              color_discrete_map={'positive': '#4ECDC4', 'negative': '#FF6B6B'})
 fig.write_html('analysis_results/02_word_count_by_sentiment.html')
-print("✅ Created: 02_word_count_by_sentiment.html")
+print("Created: 02_word_count_by_sentiment.html")
 
 # 3. Polarity vs Subjectivity Scatter
 fig = px.scatter(df_processed, x='polarity', y='subjectivity',
@@ -255,7 +255,7 @@ fig = px.scatter(df_processed, x='polarity', y='subjectivity',
                  opacity=0.6,
                  color_discrete_map={'positive': '#4ECDC4', 'negative': '#FF6B6B'})
 fig.write_html('analysis_results/03_polarity_vs_subjectivity.html')
-print("✅ Created: 03_polarity_vs_subjectivity.html")
+print("Created: 03_polarity_vs_subjectivity.html")
 
 # 4. Word Count Distribution
 fig = px.histogram(df_processed, x='word_count',
@@ -266,7 +266,7 @@ fig = px.histogram(df_processed, x='word_count',
                    nbins=50,
                    color_discrete_map={'positive': '#4ECDC4', 'negative': '#FF6B6B'})
 fig.write_html('analysis_results/04_review_length_distribution.html')
-print("✅ Created: 04_review_length_distribution.html")
+print("Created: 04_review_length_distribution.html")
 
 # 5. Statistical Comparison
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
@@ -311,7 +311,7 @@ axes[1, 1].legend()
 plt.tight_layout()
 plt.savefig('analysis_results/05_statistical_features.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 05_statistical_features.png")
+print("Created: 05_statistical_features.png")
 
 # 6. Correlation Heatmap
 plt.figure(figsize=(10, 8))
@@ -323,9 +323,9 @@ plt.title('Feature Correlation Matrix', fontsize=16, fontweight='bold', pad=20)
 plt.tight_layout()
 plt.savefig('analysis_results/06_correlation_matrix.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 06_correlation_matrix.png")
+print("Created: 06_correlation_matrix.png")
 
-print("\n✅ EDA visualizations complete!")
+print("\nEDA visualizations complete!")
 
 # ============================================================================
 # STEP 5: Word Cloud and N-gram Analysis
@@ -334,7 +334,7 @@ print("\n✅ EDA visualizations complete!")
 print("\n" + "="*80)
 print("STEP 5: WORD CLOUD AND N-GRAM ANALYSIS")
 print("="*80)
-print("☁️ Generating word clouds and n-gram analysis...")
+print("Generating word clouds and n-gram analysis...")
 
 # Word clouds for positive and negative reviews
 fig, axes = plt.subplots(1, 2, figsize=(20, 8))
@@ -358,7 +358,7 @@ axes[1].axis('off')
 plt.tight_layout()
 plt.savefig('analysis_results/07_wordclouds.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 07_wordclouds.png")
+print("Created: 07_wordclouds.png")
 
 # Top N-grams analysis
 def get_top_ngrams(corpus, n=2, top=20):
@@ -371,7 +371,7 @@ def get_top_ngrams(corpus, n=2, top=20):
     return words_freq[:top]
 
 # Bigrams
-print("\n📊 Analyzing bigrams...")
+print("\nAnalyzing bigrams...")
 positive_bigrams = get_top_ngrams(df_processed[df_processed['sentiment']=='positive']['processed_review'], n=2, top=15)
 negative_bigrams = get_top_ngrams(df_processed[df_processed['sentiment']=='negative']['processed_review'], n=2, top=15)
 
@@ -398,10 +398,10 @@ axes[1].set_title('Top Bigrams - Negative Reviews', fontweight='bold')
 plt.tight_layout()
 plt.savefig('analysis_results/08_top_bigrams.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 08_top_bigrams.png")
+print("Created: 08_top_bigrams.png")
 
 # Trigrams
-print("\n📊 Analyzing trigrams...")
+print("\nAnalyzing trigrams...")
 positive_trigrams = get_top_ngrams(df_processed[df_processed['sentiment']=='positive']['processed_review'], n=3, top=15)
 negative_trigrams = get_top_ngrams(df_processed[df_processed['sentiment']=='negative']['processed_review'], n=3, top=15)
 
@@ -428,7 +428,7 @@ axes[1].set_title('Top Trigrams - Negative Reviews', fontweight='bold')
 plt.tight_layout()
 plt.savefig('analysis_results/09_top_trigrams.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 09_top_trigrams.png")
+print("Created: 09_top_trigrams.png")
 
 # ============================================================================
 # STEP 6: Traditional Machine Learning Models
@@ -437,7 +437,7 @@ print("✅ Created: 09_top_trigrams.png")
 print("\n" + "="*80)
 print("STEP 6: TRADITIONAL MACHINE LEARNING MODELS")
 print("="*80)
-print("🤖 Training traditional ML models...")
+print("Training traditional ML models...")
 
 # Prepare data for ML models
 X = df_processed['processed_review']
@@ -452,7 +452,7 @@ print(f"Training set size: {len(X_train):,}")
 print(f"Test set size: {len(X_test):,}")
 
 # TF-IDF Vectorization
-print("\n🔢 Vectorizing text with TF-IDF...")
+print("\nVectorizing text with TF-IDF...")
 tfidf = TfidfVectorizer(max_features=5000, min_df=5, max_df=0.8, ngram_range=(1, 2))
 X_train_tfidf = tfidf.fit_transform(X_train)
 X_test_tfidf = tfidf.transform(X_test)
@@ -470,7 +470,7 @@ models = {
 results = {}
 
 for name, model in models.items():
-    print(f"\n🎯 Training {name}...")
+    print(f"\nTraining {name}...")
     model.fit(X_train_tfidf, y_train)
 
     # Predictions
@@ -540,7 +540,7 @@ fig.update_layout(
     height=500
 )
 fig.write_html('analysis_results/10_model_comparison.html')
-print("\n✅ Created: 10_model_comparison.html")
+print("\nCreated: 10_model_comparison.html")
 
 # ROC Curves
 fig = go.Figure()
@@ -567,7 +567,7 @@ fig.update_layout(
     height=600
 )
 fig.write_html('analysis_results/11_roc_curves.html')
-print("✅ Created: 11_roc_curves.html")
+print("Created: 11_roc_curves.html")
 
 # Confusion Matrix for best model
 best_model_name = results_df['F1 Score'].idxmax()
@@ -584,17 +584,17 @@ plt.xlabel('Predicted Label')
 plt.tight_layout()
 plt.savefig('analysis_results/12_confusion_matrix.png', dpi=300, bbox_inches='tight')
 plt.close()
-print("✅ Created: 12_confusion_matrix.png")
+print("Created: 12_confusion_matrix.png")
 
-print(f"\n🏆 Best performing model: {best_model_name}")
+print(f"\nBest performing model: {best_model_name}")
 print(f"   F1 Score: {results_df.loc[best_model_name, 'F1 Score']:.4f}")
 
 # Save the best model and vectorizer for later use
-print("\n💾 Saving best model and vectorizer...")
+print("\nSaving best model and vectorizer...")
 os.makedirs('models', exist_ok=True)
 joblib.dump(best_model_metrics['model'], 'models/best_model.pkl')
 joblib.dump(tfidf, 'models/tfidf_vectorizer.pkl')
-print("✅ Saved: models/best_model.pkl and models/tfidf_vectorizer.pkl")
+print("Saved: models/best_model.pkl and models/tfidf_vectorizer.pkl")
 
 # ============================================================================
 # STEP 7: Hugging Face Transformer Models (AI Integration)
@@ -603,10 +603,10 @@ print("✅ Saved: models/best_model.pkl and models/tfidf_vectorizer.pkl")
 print("\n" + "="*80)
 print("STEP 7: HUGGING FACE TRANSFORMER MODELS")
 print("="*80)
-print("🤗 Loading Hugging Face transformer models...")
+print("Loading Hugging Face transformer models...")
 
 # Use a pre-trained sentiment analysis model
-print("\n📦 Loading DistilBERT sentiment model...")
+print("\nLoading DistilBERT sentiment model...")
 sentiment_pipeline = pipeline(
     "sentiment-analysis",
     model="distilbert-base-uncased-finetuned-sst-2-english",
@@ -617,7 +617,7 @@ sentiment_pipeline = pipeline(
 sample_size = 1000
 df_sample = df_processed.sample(n=sample_size, random_state=42)
 
-print(f"\n🔍 Analyzing {sample_size} sample reviews with transformer model...")
+print(f"\nAnalyzing {sample_size} sample reviews with transformer model...")
 
 # Batch prediction
 def predict_sentiment_batch(reviews, batch_size=32):
@@ -654,7 +654,7 @@ accuracy_inverted = (df_sample['transformer_binary_inverted'] == df_sample['sent
 if accuracy_inverted > accuracy_normal:
     # Use inverted mapping if it's better
     df_sample['transformer_binary'] = df_sample['transformer_binary_inverted']
-    print(f"\n⚠️  Note: Transformer labels were inverted. Using corrected mapping.")
+    print(f"\nNote: Transformer labels were inverted. Using corrected mapping.")
     transformer_accuracy = accuracy_inverted
 else:
     transformer_accuracy = accuracy_normal
@@ -662,7 +662,7 @@ else:
 # Clean up temporary column
 df_sample = df_sample.drop(columns=['transformer_binary_inverted'], errors='ignore')
 
-print(f"\n✅ Transformer Model Accuracy: {transformer_accuracy:.4f}")
+print(f"\nTransformer Model Accuracy: {transformer_accuracy:.4f}")
 
 # Detailed comparison
 print("\nTransformer Model Classification Report:")
@@ -683,7 +683,7 @@ fig = px.histogram(
     color_discrete_map={'POSITIVE': '#4ECDC4', 'NEGATIVE': '#FF6B6B'}
 )
 fig.write_html('analysis_results/13_transformer_confidence.html')
-print("✅ Created: 13_transformer_confidence.html")
+print("Created: 13_transformer_confidence.html")
 
 # Compare ML vs Transformer predictions
 comparison_df = pd.DataFrame({
@@ -698,7 +698,7 @@ transformer_correct = (comparison_df['Transformer'] == comparison_df['Actual']).
 both_correct = ((comparison_df['Traditional ML'] == comparison_df['Actual']) &
                 (comparison_df['Transformer'] == comparison_df['Actual'])).sum()
 
-print(f"\n📊 Comparison on {sample_size} samples:")
+print(f"\nComparison on {sample_size} samples:")
 print(f"   Traditional ML correct: {ml_correct} ({ml_correct/sample_size:.2%})")
 print(f"   Transformer correct: {transformer_correct} ({transformer_correct/sample_size:.2%})")
 print(f"   Both correct: {both_correct} ({both_correct/sample_size:.2%})")
@@ -710,7 +710,7 @@ print(f"   Both correct: {both_correct} ({both_correct/sample_size:.2%})")
 print("\n" + "="*80)
 print("STEP 8: TOPIC MODELING WITH LDA")
 print("="*80)
-print("📚 Performing topic modeling with LDA...")
+print("Performing topic modeling with LDA...")
 
 # Prepare data for LDA
 vectorizer = CountVectorizer(max_features=1000, min_df=5, max_df=0.8)
@@ -718,7 +718,7 @@ doc_term_matrix = vectorizer.fit_transform(df_processed['processed_review'])
 
 # Train LDA model
 n_topics = 5
-print(f"\n🎯 Training LDA model with {n_topics} topics...")
+print(f"\nTraining LDA model with {n_topics} topics...")
 lda_model = LatentDirichletAllocation(n_components=n_topics, random_state=42, max_iter=20)
 lda_topics = lda_model.fit_transform(doc_term_matrix)
 
@@ -757,7 +757,7 @@ fig.update_layout(
     height=500
 )
 fig.write_html('analysis_results/14_topic_distribution.html')
-print("\n✅ Created: 14_topic_distribution.html")
+print("\nCreated: 14_topic_distribution.html")
 
 # Topic distribution by sentiment
 df_processed['dominant_topic'] = lda_topics.argmax(axis=1)
@@ -786,7 +786,7 @@ fig.update_layout(
     height=500
 )
 fig.write_html('analysis_results/15_topic_sentiment.html')
-print("✅ Created: 15_topic_sentiment.html")
+print("Created: 15_topic_sentiment.html")
 
 # ============================================================================
 # STEP 9: Advanced Insights and Statistical Testing
@@ -795,14 +795,14 @@ print("✅ Created: 15_topic_sentiment.html")
 print("\n" + "="*80)
 print("STEP 9: ADVANCED STATISTICAL ANALYSIS")
 print("="*80)
-print("📈 Conducting advanced statistical analysis...")
+print("Conducting advanced statistical analysis...")
 
 # T-test: Word count difference between positive and negative reviews
 pos_word_count = df_processed[df_processed['sentiment']=='positive']['word_count']
 neg_word_count = df_processed[df_processed['sentiment']=='negative']['word_count']
 
 t_stat, p_value = stats.ttest_ind(pos_word_count, neg_word_count)
-print(f"\n📊 T-Test: Word Count by Sentiment")
+print(f"\nT-Test: Word Count by Sentiment")
 print(f"   Positive mean: {pos_word_count.mean():.2f}")
 print(f"   Negative mean: {neg_word_count.mean():.2f}")
 print(f"   T-statistic: {t_stat:.4f}")
@@ -819,14 +819,14 @@ df_processed['length_category'] = pd.cut(
 contingency_table = pd.crosstab(df_processed['length_category'], df_processed['sentiment'])
 chi2, p_value_chi, dof, expected = stats.chi2_contingency(contingency_table)
 
-print(f"\n📊 Chi-Square Test: Review Length Category vs Sentiment")
+print(f"\nChi-Square Test: Review Length Category vs Sentiment")
 print(f"   Chi-square statistic: {chi2:.4f}")
 print(f"   P-value: {p_value_chi:.4e}")
 print(f"   Degrees of freedom: {dof}")
 print(f"   Significant: {'Yes' if p_value_chi < 0.05 else 'No'}")
 
 # Correlation analysis
-print(f"\n📊 Correlation Analysis:")
+print(f"\nCorrelation Analysis:")
 print(f"   Polarity vs Sentiment: {df_processed[['polarity', 'sentiment_binary']].corr().iloc[0, 1]:.4f}")
 print(f"   Subjectivity vs Sentiment: {df_processed[['subjectivity', 'sentiment_binary']].corr().iloc[0, 1]:.4f}")
 print(f"   Word Count vs Sentiment: {df_processed[['word_count', 'sentiment_binary']].corr().iloc[0, 1]:.4f}")
@@ -838,7 +838,7 @@ print(f"   Word Count vs Sentiment: {df_processed[['word_count', 'sentiment_bina
 print("\n" + "="*80)
 print("STEP 10: GENERATING FINAL REPORT")
 print("="*80)
-print("📄 Generating final comprehensive report...")
+print("Generating final comprehensive report...")
 
 report_content = f"""# IMDB Movie Reviews Sentiment Analysis
 ## Comprehensive Data Science Report
@@ -854,12 +854,12 @@ report_content = f"""# IMDB Movie Reviews Sentiment Analysis
 This project analyzes {len(df_processed):,} IMDB movie reviews using a combination of traditional machine learning techniques and state-of-the-art transformer models from Hugging Face. The analysis includes comprehensive exploratory data analysis, feature engineering, multiple model comparisons, and advanced NLP techniques including topic modeling.
 
 ### Key Achievements:
-- ✅ Processed and analyzed 50,000+ movie reviews
-- ✅ Trained and compared 4 traditional ML models
-- ✅ Integrated Hugging Face transformer models
-- ✅ Performed topic modeling to discover review themes
-- ✅ Conducted statistical hypothesis testing
-- ✅ Generated professional visualizations
+- Processed and analyzed 50,000+ movie reviews
+- Trained and compared 4 traditional ML models
+- Integrated Hugging Face transformer models
+- Performed topic modeling to discover review themes
+- Conducted statistical hypothesis testing
+- Generated professional visualizations
 
 ---
 
@@ -1054,32 +1054,32 @@ All visualizations are saved in the `analysis_results` folder.
 with open('analysis_results/FINAL_REPORT.md', 'w', encoding='utf-8') as f:
     f.write(report_content)
 
-print("✅ Created: FINAL_REPORT.md")
+print("Created: FINAL_REPORT.md")
 
 # Save processed data summary
 df_processed[['review', 'sentiment', 'word_count', 'polarity', 'subjectivity', 'dominant_topic']].head(100).to_csv(
     'analysis_results/sample_processed_data.csv', index=False
 )
-print("✅ Created: sample_processed_data.csv")
+print("Created: sample_processed_data.csv")
 
 # Save model comparison results
 results_df.to_csv('analysis_results/model_comparison.csv')
-print("✅ Created: model_comparison.csv")
+print("Created: model_comparison.csv")
 
 print("\n" + "="*80)
-print("🎉 PROJECT COMPLETE!")
+print("PROJECT COMPLETE!")
 print("="*80)
-print(f"\n📁 All results saved in 'analysis_results' folder:")
+print(f"\nAll results saved in 'analysis_results' folder:")
 print(f"   • 6 interactive HTML visualizations")
 print(f"   • 6 static PNG images")
 print(f"   • 1 comprehensive markdown report")
 print(f"   • 2 CSV data files")
-print(f"\n✨ This project demonstrates:")
-print(f"   ✓ Large dataset processing (50K+ reviews)")
-print(f"   ✓ Advanced NLP and feature engineering")
-print(f"   ✓ Multiple ML models with comparison")
-print(f"   ✓ Hugging Face transformer integration")
-print(f"   ✓ Topic modeling and statistical testing")
-print(f"   ✓ Professional data visualization")
-print(f"   ✓ Comprehensive reporting")
-print(f"\n🚀 Ready to showcase your data science skills!")
+print(f"\nThis project demonstrates:")
+print(f"   • Large dataset processing (50K+ reviews)")
+print(f"   • Advanced NLP and feature engineering")
+print(f"   • Multiple ML models with comparison")
+print(f"   • Hugging Face transformer integration")
+print(f"   • Topic modeling and statistical testing")
+print(f"   • Professional data visualization")
+print(f"   • Comprehensive reporting")
+print(f"\nReady to showcase your data science skills!")
