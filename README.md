@@ -1,4 +1,4 @@
-# 🎬 IMDB Movie Review Sentiment Analysis & Insights Platform
+# IMDB Movie Review Sentiment Analysis & Insights Platform
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange)](https://scikit-learn.org/)
@@ -7,7 +7,7 @@
 
 A comprehensive data science project that analyzes 50,000 IMDB movie reviews using advanced NLP, machine learning, and AI-powered insights. This project showcases enterprise-level data engineering, statistical analysis, machine learning, deep learning, and modern AI integration using Hugging Face transformers.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project demonstrates advanced data science capabilities through:
 
@@ -20,7 +20,7 @@ This project demonstrates advanced data science capabilities through:
 - **AI Integration**: Leveraging Hugging Face models for enhanced insights
 - **Production-Ready Code**: Clean architecture, error handling, comprehensive documentation
 
-## 📊 Key Features
+## Key Features
 
 ### 1. Comprehensive Data Analysis
 - Load and process 50,000 IMDB movie reviews from Hugging Face
@@ -82,7 +82,7 @@ Each model evaluated on:
 - Model performance comparisons
 - Topic distribution charts
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 ### Core Libraries
 ```
@@ -101,7 +101,7 @@ Utilities:           tqdm, jupyter
 - **NLP**: TF-IDF, Count Vectorization, LDA
 - **Statistical**: T-tests, Chi-square tests, Pearson correlation
 
-## 📦 Installation
+## Installation
 
 ### 1. Clone the Repository
 ```bash
@@ -123,7 +123,7 @@ pip install -r requirements.txt
 ### 4. Download NLTK Data (Automatic)
 The script automatically downloads required NLTK resources on first run.
 
-## 🚀 Usage
+## Usage
 
 ### Run the Complete Analysis
 ```bash
@@ -145,7 +145,7 @@ This will:
 - **On CPU**: ~15-20 minutes
 - **On GPU**: ~8-12 minutes
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 Movie-Review-Sentiment-Analysis-Insights-Platform/
@@ -178,7 +178,7 @@ Movie-Review-Sentiment-Analysis-Insights-Platform/
 └── src/                            # Source code modules (optional)
 ```
 
-## 📊 Sample Results
+## Sample Results
 
 ### Model Performance
 | Model               | Accuracy | Precision | Recall | F1 Score | ROC AUC |
@@ -196,7 +196,7 @@ Movie-Review-Sentiment-Analysis-Insights-Platform/
 - Strong correlation between polarity and sentiment (0.85+)
 - Statistically significant word count differences between sentiments
 
-## 🎓 What This Project Demonstrates
+## What This Project Demonstrates
 
 ### Data Science Skills
 - Large-scale data processing (50K+ samples)
@@ -247,7 +247,7 @@ Movie-Review-Sentiment-Analysis-Insights-Platform/
 - Reproducibility (random seeds)
 - Production-ready structure
 
-## 📈 Output Files
+## Output Files
 
 ### Interactive HTML Visualizations (6)
 - Sentiment distributions
@@ -271,7 +271,7 @@ Movie-Review-Sentiment-Analysis-Insights-Platform/
 - Sample processed data CSV
 - Model comparison CSV
 
-## 🔧 Configuration
+## Configuration
 
 ### Model Parameters
 ```python
@@ -297,7 +297,7 @@ sample_size = 1000  # For transformer analysis
 batch_size = 32
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -307,23 +307,23 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is open source and available under the MIT License.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Dataset**: [IMDB Movie Reviews](https://huggingface.co/datasets/ajaykarthick/imdb-movie-reviews) from Hugging Face
 - **Transformer Model**: [DistilBERT](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) from Hugging Face
 - **Libraries**: scikit-learn, Hugging Face Transformers, NLTK, Plotly, and all amazing open-source contributors
 
-## 📧 Contact
+## Contact
 
 For questions or feedback, please open an issue in the repository.
 
-## 🌟 Star This Repository
+## Star This Repository
 
-If you find this project helpful, please consider giving it a star! ⭐
+If you find this project helpful, please consider giving it a star! 
 
 ---
 
